@@ -1,0 +1,96 @@
+/* BPS Kota Manado - Official Web Theme 
+   Colors: Dark Blue (#004488) & Orange (#FFA500)
+*/
+
+:root {
+  --bps-blue: #004488;
+  --bps-blue-dark: #003366;
+  --bps-orange: #ffa500;
+  --bps-bg-light: #f4f7f9;
+  --bps-text: #333333;
+}
+
+body {
+  background-color: var(--bps-bg-light);
+  color: var(--bps-text);
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Navbar Implementation */
+.navbar-bps {
+  background-color: var(--bps-blue) !important;
+  border-bottom: 4px solid var(--bps-orange);
+  padding: 10px 20px;
+}
+
+.navbar-brand {
+  color: #ffffff !important;
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+}
+
+.navbar-logo-white {
+  height: 50px;
+  width: auto;
+  filter: none !important; /* Glow effect removed as requested */
+}
+
+/* Card & UI Elements */
+.card {
+  border: none;
+  border-top: 4px solid var(--bps-blue);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.card-title {
+  color: var(--bps-blue);
+  font-weight: bold;
+}
+
+/* Badges & Status */
+.no-bukti-badge {
+  background-color: var(--bps-orange);
+  color: #fff;
+  font-weight: bold;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+}
+
+/* Buttons */
+.btn-warning {
+  background-color: var(--bps-orange) !important;
+  border-color: var(--bps-orange) !important;
+  color: #fff !important;
+}
+
+.btn-warning:hover {
+  background-color: #e69500 !important;
+}
+
+.btn-light.text-primary {
+  color: var(--bps-blue) !important;
+  font-weight: bold;
+}
+
+/* Table Styling */
+.table thead th {
+  background-color: var(--bps-blue) !important;
+  color: white !important;
+  text-align: center;
+  vertical-align: middle;
+  border: none;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(0, 68, 136, 0.02);
+}
+
+/* Custom alignment for DataTables */
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+  background: var(--bps-blue) !important;
+  color: white !important;
+  border: 1px solid var(--bps-blue) !important;
+}
