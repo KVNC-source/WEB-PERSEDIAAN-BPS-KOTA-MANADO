@@ -1,6 +1,6 @@
 <?php
 include '../DB/config.php';
-$user_role = 'admin'; // Simulasi proteksi
+$user_role = 'admin'; 
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && $user_role == 'admin') {
     $type = $_POST['type'];
@@ -10,40 +10,71 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $user_role == 'admin') {
     $rowCount = 0;
     $success = 0;
 
+    // Helper function to format dates to MySQL format (YYYY-MM-DD)
+    function formatTanggal($dateString) {
+        if (empty(trim($dateString))) return date('Y-m-d');
+        $date = date_create($dateString);
+        return $date ? date_format($date, 'Y-m-d') : date('Y-m-d');
+    }
+
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
         $rowCount++;
-        // Lewati 7 baris awal (metadata + header)
-        if ($rowCount <= 7) continue; 
+        
+        // Skip headers and metadata based on your specific CSV files
+        if ($type == 'pemasukan' && $rowCount <= 3) continue; 
+        if ($type == 'pengeluaran' && $rowCount <= 1) continue; 
+        if ($type == 'master' && $rowCount <= 4) continue; 
 
-        // Mapping yang sesuai dengan file CSV Anda:
-        $tanggal_raw = trim($data[0]); // Kolom 0 adalah Tanggal
-        $nama_pegawai = mysqli_real_escape_string($conn, trim($data[1])); // Kolom 1 adalah Pegawai
-        $nama_barang_input = trim($data[2]); // Kolom 2 adalah Nama Barang
-        $jumlah = (float)$data[3]; // Kolom 3 adalah Jumlah // Skip header
+        // Skip completely empty rows
+        if (empty(array_filter($data))) continue;
 
-        if ($type == 'pengeluaran') {
-            // Logika Pengeluaran: Tanggal, Pegawai, Barang, Jumlah
-            $tanggal = $data[1]; $pegawai = $data[2]; $barang = $data[3]; $jumlah = $data[4];
-            $query = "INSERT INTO pengeluaran (nama_pegawai, nama_barang_input, jumlah, tanggal, keterangan) 
-                      VALUES ('$pegawai', '$barang', '$jumlah', '$tanggal', 'Import Admin')";
+        $query = "";
+
+        if ($type == 'pengeluaran' && isset($data[6])) {
+            // Structure: Tanggal(0), Pegawai(1), Barang(2), Jumlah(3), Satuan(4), Keterangan(5), No Bukti(6)
+            $tanggal = formatTanggal($data[0]);
+            $pegawai = mysqli_real_escape_string($conn, $data[1]);
+            $barang  = mysqli_real_escape_string($conn, $data[2]);
+            $jumlah  = (int)$data[3];
+            $satuan  = mysqli_real_escape_string($conn, $data[4]);
+            $ket     = mysqli_real_escape_string($conn, $data[5]);
+            $bukti   = mysqli_real_escape_string($conn, $data[6]);
+
+            $query = "INSERT INTO pengeluaran (tanggal, nama_pegawai, nama_barang_input, jumlah, satuan, keterangan, no_bukti) 
+                      VALUES ('$tanggal', '$pegawai', '$barang', '$jumlah', '$satuan', '$ket', '$bukti')";
         } 
-        else if ($type == 'pemasukan') {
-            // Logika Pemasukan: Tanggal, Barang, Jumlah, Ket
-            $tanggal = $data[0]; $barang = $data[1]; $jumlah = $data[2]; $ket = $data[3];
-            $query = "INSERT INTO pemasukan (tanggal, nama_barang_input, jumlah, keterangan) 
-                      VALUES ('$tanggal', '$barang', '$jumlah', '$ket')";
+        else if ($type == 'pemasukan' && isset($data[2])) {
+            // Structure: Tanggal(0), Nama Barang(1), Jumlah(2), Satuan(3), Keterangan(4)
+            $tanggal = formatTanggal($data[0]);
+            $barang  = mysqli_real_escape_string($conn, $data[1]);
+            $jumlah  = (float)$data[2];
+            $satuan  = isset($data[3]) ? mysqli_real_escape_string($conn, $data[3]) : '';
+            $ket     = isset($data[4]) ? mysqli_real_escape_string($conn, $data[4]) : '';
+
+            $query = "INSERT INTO pemasukan (tanggal, nama_barang_input, jumlah, satuan, keterangan) 
+                      VALUES ('$tanggal', '$barang', '$jumlah', '$satuan', '$ket')";
         }
-        else if ($type == 'master') {
-            // Logika Master: Nama Barang, Satuan
-            $nama = $data[0]; $satuan = $data[1];
+        else if ($type == 'master' && isset($data[1])) {
+            // Structure: Nama Barang(0), Satuan(1)
+            $nama   = mysqli_real_escape_string($conn, $data[0]);
+            $satuan = mysqli_real_escape_string($conn, $data[1]);
+            
             $query = "INSERT INTO barang_atk (nama_barang, satuan) VALUES ('$nama', '$satuan') 
                       ON DUPLICATE KEY UPDATE satuan='$satuan'";
         }
 
-        if (mysqli_query($conn, $query)) $success++;
+        if (!empty($query) && mysqli_query($conn, $query)) {
+            $success++;
+        }
     }
     fclose($handle);
+
+    // Final Sync: Link transactions to the Master Item IDs based on names
+    mysqli_query($conn, "UPDATE pemasukan p JOIN barang_atk b ON p.nama_barang_input = b.nama_barang SET p.id_barang = b.id_barang WHERE p.id_barang IS NULL");
+    mysqli_query($conn, "UPDATE pengeluaran pg JOIN barang_atk b ON pg.nama_barang_input = b.nama_barang SET pg.id_barang = b.id_barang WHERE pg.id_barang IS NULL");
+
     header("Location: ../Template/index.php?msg=Berhasil memproses $success data $type");
+    exit;
 } else {
     die("Akses ditolak.");
 }
