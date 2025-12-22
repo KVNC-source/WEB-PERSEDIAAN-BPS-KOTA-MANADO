@@ -37,16 +37,22 @@ body {
 }
 
 /* Card & UI Elements */
+/* Card & UI Elements */
 .card {
   border: none;
+  /* Keep the top accent line if you like it, otherwise remove this: */
   border-top: 4px solid var(--bps-blue);
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+
+  /* REMOVE THE BUBBLE WRAP: */
+  border-radius: 0; /* Set to 0 to remove rounded corners */
+  box-shadow: none; /* Removes the floating/depth effect */
+  background-color: transparent; /* Makes the title blend with the page background */
 }
 
 .card-title {
-  color: var(--bps-blue);
-  font-weight: bold;
+  background: none !important;
+  border-bottom: none !important;
+  padding-left: 0; /* Aligns text to the far left of the container */
 }
 
 /* Badges & Status */

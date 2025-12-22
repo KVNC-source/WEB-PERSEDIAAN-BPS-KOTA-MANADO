@@ -15,19 +15,16 @@ $result = mysqli_query($conn, $query);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-   <?php
-// Mendapatkan nama file saat ini untuk menentukan tombol mana yang aktif
+<?php
+// Simulasi Role: Ganti ke 'pegawai' untuk mencoba tampilan sebagai pegawai
+$user_role = 'admin'; 
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
-
 <nav class="navbar navbar-bps shadow-sm mb-4">
   <div class="container-fluid">
     <a class="navbar-brand" href="index.php">
-      <img src="../asset/Logo BPS Kota Manado - All White.png" 
-           alt="BPS Manado Logo" 
-           class="navbar-logo-white">
+      <img src="../asset/Logo BPS Kota Manado - All White.png" alt="BPS Logo" class="navbar-logo-white" style="height: 50px;">
     </a>
-    
     <div class="d-flex gap-3">
         <a href="index.php" class="btn <?php echo ($current_page == 'index.php') ? 'btn-light text-primary' : 'btn-outline-light'; ?> btn-sm fw-bold">
             <i class="fas fa-arrow-up me-1"></i> Pengeluaran
@@ -38,9 +35,12 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <a href="stok.php" class="btn <?php echo ($current_page == 'stok.php') ? 'btn-light text-primary' : 'btn-outline-light'; ?> btn-sm fw-bold">
             <i class="fas fa-boxes me-1"></i> Data Stok
         </a>
-        <a href="upload.php" class="btn btn-warning btn-sm fw-bold">
+        
+        <?php if ($user_role == 'admin'): ?>
+        <a href="upload.php" class="btn btn-warning btn-sm fw-bold shadow-sm">
             <i class="fas fa-plus-circle me-1"></i> Input Data
         </a>
+        <?php endif; ?>
     </div>
   </div>
 </nav>
@@ -48,27 +48,34 @@ $current_page = basename($_SERVER['PHP_SELF']);
     <div class="container-fluid px-4">
       <div class="card shadow">
         <div class="card-body">
-          <h5 class="card-title text-primary"><i class="fas fa-file-import me-2"></i>Riwayat Pemasukan Barang</h5>
+          <div class="d-flex justify-content-between align-items-center mb-4">
+              <h5 class="card-title text-primary"><i class="fas fa-file-import me-2"></i>Riwayat Pemasukan Barang</h5>
+          </div>
           <table id="pemasukanTable" class="table table-striped table-hover align-middle">
             <thead>
               <tr>
                 <th>ID</th>
                 <th>Tanggal</th>
                 <th>Nama Barang</th>
-                <th>Jumlah</th>
-                <th>Satuan</th>
+                <th class="text-center">Jumlah</th>
                 <th>Keterangan</th>
               </tr>
             </thead>
             <tbody>
               <?php while($row = mysqli_fetch_assoc($result)) { ?>
               <tr>
-                <td><?php echo $row['id_pemasukan']; ?></td>
-                <td><?php echo $row['tanggal']; ?></td>
-                <td><?php echo $row['nama_barang_input']; ?></td>
-                <td class="text-center fw-bold"><?php echo $row['jumlah']; ?></td>
-                <td><?php echo $row['satuan']; ?></td>
-                <td><small><?php echo $row['keterangan']; ?></small></td>
+                <td class="text-center fw-bold">
+                  <?php echo str_pad($row['id_pemasukan'], 3, '0', STR_PAD_LEFT); ?>
+                </td>
+                <td><i class="far fa-calendar-alt me-1 text-muted"></i> <?php echo $row['tanggal']; ?></td>
+                <td>
+                  <?php echo $row['nama_barang_input']; ?> 
+                  <small class="text-muted">(<?php echo $row['satuan']; ?>)</small>
+                </td>
+                <td class="text-center fw-bold text-success">
+                  +<?php echo $row['jumlah']; ?>
+                </td>
+                <td><small class="text-muted"><?php echo $row['keterangan']; ?></small></td>
               </tr>
               <?php } ?>
             </tbody>
@@ -82,23 +89,27 @@ $current_page = basename($_SERVER['PHP_SELF']);
     <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
     <script>
       $(document).ready(function () {
-    $("#pemasukanTable").DataTable({
-        "order": [[0, "desc"]], // Urutkan berdasarkan ID terbaru
-        "pageLength": 15,
-        "language": {
-            "sLengthMenu":   "Tampilkan _MENU_ data pemasukan",
-            "sZeroRecords":  "Riwayat pemasukan tidak ditemukan",
-            "sInfo":         "Menampilkan _START_ sampai _END_ dari _TOTAL_ data pemasukan",
-            "sInfoEmpty":    "Menampilkan 0 sampai 0 dari 0 data",
-            "sInfoFiltered": "(disaring dari _MAX_ total data)",
-            "sSearch":       "Cari Barang/Tanggal:",
-            "oPaginate": {
-                "sPrevious": "Kembali",
-                "sNext":     "Lanjut"
+        $("#pemasukanTable").DataTable({
+            "order": [[0, "desc"]], // Urutkan berdasarkan ID terbaru
+            "pageLength": 15,
+            "language": {
+                "sEmptyTable":   "Tidak ada data yang tersedia pada tabel ini",
+                "sProcessing":   "Sedang memproses...",
+                "sLengthMenu":   "Tampilkan _MENU_ data",
+                "sZeroRecords":  "Riwayat pemasukan tidak ditemukan",
+                "sInfo":         "Menampilkan _START_ sampai _END_ dari _TOTAL_ data pemasukan",
+                "sInfoEmpty":    "Menampilkan 0 sampai 0 dari 0 data",
+                "sInfoFiltered": "(disaring dari _MAX_ total data)",
+                "sSearch":       "Cari Data:",
+                "oPaginate": {
+                    "sFirst":    "Pertama",
+                    "sPrevious": "Kembali",
+                    "sNext":     "Lanjut",
+                    "sLast":     "Terakhir"
+                }
             }
-        }
-    });
-});
+        });
+      });
     </script>
 </body>
 </html>

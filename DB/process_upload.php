@@ -1,122 +1,50 @@
 <?php
 include '../DB/config.php';
+$user_role = 'admin'; // Simulasi proteksi
 
-/**
- * Pemroses Unggahan Data Pengeluaran (GForm) - Versi CSV Ringan
- * Alur:
- * 1. Unggah file .csv hasil download dari GForm.
- * 2. Sistem mendeteksi pemisah (koma atau titik koma).
- * 3. Sistem mencocokkan Nama Barang dengan database master (barang_atk).
- * 4. Stok berkurang secara otomatis di halaman Data Stok.
- */
-
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['excel_file'])) {
-    $file_name = $_FILES['excel_file']['name'];
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && $user_role == 'admin') {
+    $type = $_POST['type'];
     $file_tmp = $_FILES['excel_file']['tmp_name'];
-    $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+    
+    $handle = fopen($file_tmp, "r");
+    $rowCount = 0;
+    $success = 0;
 
-    $successCount = 0;
-    $errorCount = 0;
-    $errorDetails = [];
+    while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+        $rowCount++;
+        // Lewati 7 baris awal (metadata + header)
+        if ($rowCount <= 7) continue; 
 
-    // Proteksi format file
-    if ($file_ext !== 'csv') {
-        header("Location: index.php?msg=" . urlencode("Error: Harap gunakan format .csv. (Buka file Excel Anda, Save As -> CSV)"));
-        exit;
-    }
+        // Mapping yang sesuai dengan file CSV Anda:
+        $tanggal_raw = trim($data[0]); // Kolom 0 adalah Tanggal
+        $nama_pegawai = mysqli_real_escape_string($conn, trim($data[1])); // Kolom 1 adalah Pegawai
+        $nama_barang_input = trim($data[2]); // Kolom 2 adalah Nama Barang
+        $jumlah = (float)$data[3]; // Kolom 3 adalah Jumlah // Skip header
 
-    try {
-        $handle = fopen($file_tmp, "r");
-        
-        // Deteksi pemisah (delimiter) secara otomatis
-        $firstLine = fgets($handle);
-        $separator = (strpos($firstLine, ';') !== false) ? ';' : ',';
-        rewind($handle);
-
-        $rowCount = 0;
-        while (($data = fgetcsv($handle, 1000, $separator)) !== FALSE) {
-            $rowCount++;
-            
-            // Lewati baris header (Baris 1)
-            if ($rowCount == 1) continue; 
-            
-            // Abaikan jika baris kosong
-            if (count($data) < 4 || empty($data[1]) || empty($data[3])) continue;
-
-            /**
-             * Mapping Berdasarkan Dummy GForm:
-             * $data[0] = Timestamp (Abaikan)
-             * $data[1] = Tanggal Pengambilan
-             * $data[2] = Diambil Oleh (Pegawai)
-             * $data[3] = Nama Barang
-             * $data[4] = Jumlah
-             */
-            
-            // 1. Bersihkan & Format Tanggal
-            // Menggunakan DateTime untuk menangani berbagai format GForm (M/D/Y atau D/M/Y)
-            $raw_date = trim($data[1]);
-            $date_obj = date_create($raw_date);
-            if ($date_obj) {
-                $tanggal = date_format($date_obj, "Y-m-d");
-            } else {
-                $tanggal = date("Y-m-d"); // Fallback ke hari ini jika gagal
-            }
-            
-            // 2. Sanitasi Input
-            $nama_pegawai = mysqli_real_escape_string($conn, trim($data[2]));
-            $nama_barang_input = trim($data[3]);
-            $nama_barang_sql = mysqli_real_escape_string($conn, $nama_barang_input);
-            
-            // Bersihkan angka (hilangkan pemisah ribuan jika ada, ganti koma desimal ke titik)
-            $jumlah_raw = str_replace(['.', ','], ['', '.'], $data[4]);
-            $jumlah = (float)$jumlah_raw;
-
-            // 3. Cari ID Barang di master (barang_atk)
-            // Menggunakan BINARY/Exact match dulu, baru LIKE sebagai cadangan
-            $find_query = "SELECT id_barang, satuan FROM barang_atk 
-                          WHERE nama_barang = '$nama_barang_sql' 
-                          OR nama_barang_sakti = '$nama_barang_sql' 
-                          OR nama_barang LIKE '%$nama_barang_sql%' 
-                          LIMIT 1";
-                          
-            $res = mysqli_query($conn, $find_query);
-            $barang = mysqli_fetch_assoc($res);
-
-            if ($barang && $jumlah > 0) {
-                $id_barang = $barang['id_barang'];
-                $satuan = $barang['satuan'];
-
-                // 4. Masukkan ke tabel pengeluaran
-                $insert = "INSERT INTO pengeluaran (id_barang, nama_barang_input, tanggal, jumlah, satuan, nama_pegawai, keterangan) 
-                           VALUES ('$id_barang', '$nama_barang_sql', '$tanggal', '$jumlah', '$satuan', '$nama_pegawai', 'Import GForm')";
-                
-                if (mysqli_query($conn, $insert)) {
-                    $successCount++;
-                } else {
-                    $errorCount++;
-                }
-            } else {
-                // Barang tidak ditemukan di master atau jumlah 0
-                $errorCount++;
-                $errorDetails[] = $nama_barang_input;
-            }
+        if ($type == 'pengeluaran') {
+            // Logika Pengeluaran: Tanggal, Pegawai, Barang, Jumlah
+            $tanggal = $data[1]; $pegawai = $data[2]; $barang = $data[3]; $jumlah = $data[4];
+            $query = "INSERT INTO pengeluaran (nama_pegawai, nama_barang_input, jumlah, tanggal, keterangan) 
+                      VALUES ('$pegawai', '$barang', '$jumlah', '$tanggal', 'Import Admin')";
+        } 
+        else if ($type == 'pemasukan') {
+            // Logika Pemasukan: Tanggal, Barang, Jumlah, Ket
+            $tanggal = $data[0]; $barang = $data[1]; $jumlah = $data[2]; $ket = $data[3];
+            $query = "INSERT INTO pemasukan (tanggal, nama_barang_input, jumlah, keterangan) 
+                      VALUES ('$tanggal', '$barang', '$jumlah', '$ket')";
         }
-        fclose($handle);
-
-        // Buat pesan laporan yang lebih mendetail
-        $msg = "Berhasil impor $successCount data.";
-        if ($errorCount > 0) {
-            $failed_items = array_unique($errorDetails);
-            $msg .= " Gagal $errorCount data. Pastikan nama barang berikut terdaftar di database: " . implode(", ", array_slice($failed_items, 0, 3));
-            if (count($failed_items) > 3) $msg .= "...";
+        else if ($type == 'master') {
+            // Logika Master: Nama Barang, Satuan
+            $nama = $data[0]; $satuan = $data[1];
+            $query = "INSERT INTO barang_atk (nama_barang, satuan) VALUES ('$nama', '$satuan') 
+                      ON DUPLICATE KEY UPDATE satuan='$satuan'";
         }
-        
-        header("Location: index.php?msg=" . urlencode($msg));
-        
-    } catch (Exception $e) {
-        header("Location: index.php?msg=" . urlencode("Error: " . $e->getMessage()));
+
+        if (mysqli_query($conn, $query)) $success++;
     }
+    fclose($handle);
+    header("Location: ../Template/index.php?msg=Berhasil memproses $success data $type");
 } else {
-    header("Location: index.php");
+    die("Akses ditolak.");
 }
 ?>
