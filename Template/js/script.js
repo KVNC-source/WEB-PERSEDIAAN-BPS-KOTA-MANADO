@@ -1,39 +1,39 @@
 $(document).ready(function () {
-  // 1. Initialize the Inventory Table
-  const table = $("#atkTable").DataTable({
-    order: [[0, "desc"]], // Show newest No. Bukti first
-    pageLength: 25,
-    dom: "Bfrtip", // Enable export buttons
-    buttons: ["copy", "excel", "print"],
-    language: {
-      search: "Cari Data (Pegawai/Barang):",
-      lengthMenu: "Tampilkan _MENU_ entri",
-      paginate: {
-        first: "Awal",
-        last: "Akhir",
-        next: "Lanjut",
-        previous: "Balik",
+  // 1. Initialize the Inventory Table (only if the table exists on the page)
+  if ($("#atkTable").length) {
+    const table = $("#atkTable").DataTable({
+      order: [[0, "desc"]],
+      pageLength: 25,
+      dom: "Bfrtip",
+      buttons: ["copy", "excel", "print"],
+      language: {
+        search: "Cari Data (Pegawai/Barang):",
+        lengthMenu: "Tampilkan _MENU_ entri",
+        paginate: {
+          first: "Awal",
+          last: "Akhir",
+          next: "Lanjut",
+          previous: "Balik",
+        },
       },
-    },
-    // Highlight rows based on status
-    createdRow: function (row, data, dataIndex) {
-      if (data[5].includes("Tidak Disetujui")) {
-        $(row).addClass("table-danger");
-      }
-    },
-  });
+      createdRow: function (row, data, dataIndex) {
+        if (data[5] && data[5].includes("Tidak Disetujui")) {
+          $(row).addClass("table-danger");
+        }
+      },
+    });
 
-  // 2. Custom Filter Logic for BPS Protocols
-  // Filter by Date Range
-  $("#minDate, #maxDate").on("change", function () {
-    table.draw();
-  });
+    // Filter by Date Range
+    $("#minDate, #maxDate").on("change", function () {
+      table.draw();
+    });
+  }
 
-  // 3. Form Validation for Uploads
+  // 2. Form Validation for Uploads - FIXED TO CSV
   $("#uploadForm").on("submit", function (e) {
     let file = $("#fileInput").val();
-    if (!file.endsWith(".xlsx")) {
-      alert("Harap unggah file format .xlsx sesuai standar BPS");
+    if (!file.toLowerCase().endsWith(".csv")) {
+      alert("Harap unggah file format .csv sesuai standar sistem pemrosesan.");
       e.preventDefault();
     }
   });
@@ -41,6 +41,6 @@ $(document).ready(function () {
 
 // Logic for Automatic Print Trigger
 function printForm(no_bukti) {
-  // Redirect to the Python route that generates the PDF
-  window.location.href = `/generate_pdf/${no_bukti}`;
+  // Corrected to PHP path based on your file structure
+  window.location.href = `generate_pdf.php?no_bukti=${no_bukti}`;
 }

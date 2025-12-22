@@ -32,18 +32,18 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 <div class="card shadow border-0">
                     <div class="card-body p-5">
                         <div class="text-center mb-4">
-                            <i class="fas fa-file-excel fa-3x text-success mb-3"></i>
+                            <i class="fas fa-file-csv fa-3x text-success mb-3"></i>
                             <h4 class="fw-bold">Impor Hasil Google Form</h4>
-                            <p class="text-muted small">Unggah file .xlsx hasil ekspor dari Google Form Pengeluaran Barang</p>
+                            <p class="text-muted small">Unggah file <b>.csv</b> hasil ekspor dari Google Form Pengeluaran Barang</p>
                         </div>
                         
-                        <form action="../DB/process_upload.php" method="POST" enctype="multipart/form-data">
+                        <form id="uploadForm" action="../DB/process_upload.php" method="POST" enctype="multipart/form-data">
                             <div class="mb-4">
-                                <label class="form-label fw-bold">Pilih File Excel</label>
-                                <input type="file" name="excel_file" class="form-control" accept=".xlsx, .xls" required>
+                                <label class="form-label fw-bold">Pilih File CSV</label>
+                                <input type="file" name="excel_file" id="fileInput" class="form-control" accept=".csv" required>
                                 <div class="form-text mt-2 italic small">
                                     <i class="fas fa-info-circle me-1"></i> 
-                                    Pastikan urutan kolom: Tanggal, Nama Pegawai, Nama Barang, Jumlah.
+                                    Pastikan urutan kolom: [0]Timestamp, [1]Tanggal, [2]Pegawai, [3]Nama Barang, [4]Jumlah.
                                 </div>
                             </div>
                             
@@ -62,5 +62,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             </div>
         </div>
     </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/script.js"></script>
 </body>
 </html>
