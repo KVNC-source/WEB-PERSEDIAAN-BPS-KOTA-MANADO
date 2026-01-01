@@ -100,3 +100,36 @@ body {
   color: white !important;
   border: 1px solid var(--bps-blue) !important;
 }
+
+/* --- Letter/Long-form Text Styles --- */
+.letter-content {
+  max-width: 600px; /* Limits width for better readability */
+  background: #fff;
+  padding: 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border-radius: 2px;
+  position: relative;
+  line-height: 1.8; /* Increases spacing between lines */
+}
+
+.letter-content p {
+  margin-bottom: 25px; /* Adds space between your paragraphs */
+  font-size: 1.15em;
+  color: var(--text-dark);
+  text-align: justify; /* Optional: gives a clean, formal look */
+}
+
+.letter-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* Subtle decorative element for a "letter" feel */
+.letter-content::after {
+  content: "♥";
+  position: absolute;
+  bottom: 20px;
+  right: 30px;
+  font-size: 1.5em;
+  color: var(--christmas-red);
+  opacity: 0.5;
+}

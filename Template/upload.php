@@ -1,7 +1,7 @@
 <?php
 include '../DB/config.php';
 
-// Simulasi Role: Hanya Admin yang bisa mengakses halaman ini
+// Role Simulation: Only Admin can access this page
 $user_role = 'admin'; 
 if ($user_role !== 'admin') {
     header("Location: index.php");
@@ -14,29 +14,48 @@ $current_page = basename($_SERVER['PHP_SELF']);
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Panel | BPS KOTA MANADO</title>
+    <title>BPS KOTA MANADO | Input Data</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         .upload-card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: all 0.3s cubic-bezier(.25,.8,.25,1);
             border: none;
-            border-radius: 15px;
+            border-radius: 12px;
+            overflow: hidden;
         }
         .upload-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.12) !important;
         }
-        .icon-box {
-            width: 70px;
-            height: 70px;
+        .icon-circle {
+            width: 80px;
+            height: 80px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
-            margin: 0 auto 20px;
+            margin: 0 auto 25px;
+            font-size: 2rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .card-title-sub {
+            font-size: 0.85rem;
+            color: #6c757d;
+            height: 40px;
+            line-height: 1.4;
+        }
+        .btn-upload {
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+        .guide-section {
+            background-color: #fff;
+            border-radius: 12px;
         }
     </style>
 </head>
@@ -64,66 +83,67 @@ $current_page = basename($_SERVER['PHP_SELF']);
   </div>
 </nav>
 
-<div class="container-fluid px-4">
-    <div class="row mb-5">
-        <div class="col-12 text-center">
-            <h3 class="fw-bold text-primary mb-2">Pusat Manajemen Data</h3>
-            <p class="text-muted">Pilih kategori yang ingin diperbarui menggunakan file .csv</p>
-        </div>
+<div class="container py-4">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold text-primary mb-2">Pusat Manajemen Data</h2>
+        <p class="text-muted">Perbarui basis data persediaan menggunakan file .csv</p>
     </div>
 
-    <div class="row g-4 justify-content-center">
+    <div class="row g-4 mb-5">
+        <!-- Pengeluaran Card -->
         <div class="col-md-4">
-            <div class="card shadow-sm upload-card h-100">
-                <div class="card-body text-center p-4">
-                    <div class="icon-box bg-danger bg-opacity-10 text-danger">
-                        <i class="fas fa-file-export fa-2xl"></i>
+            <div class="card shadow-sm upload-card h-100 border-top border-danger border-4">
+                <div class="card-body p-4 text-center">
+                    <div class="icon-circle bg-danger bg-opacity-10 text-danger">
+                        <i class="fas fa-file-export"></i>
                     </div>
-                    <h5 class="fw-bold mb-3">Data Pengeluaran</h5>
-                    <p class="small text-muted mb-4">Update riwayat pengambilan barang pegawai melalui ekspor Google Form.</p>
+                    <h5 class="fw-bold text-dark mb-2">Data Pengeluaran</h5>
+                    <p class="card-title-sub mb-4 px-2">Unggah riwayat distribusi barang kepada pegawai.</p>
                     <form action="../DB/process_upload.php" method="POST" enctype="multipart/form-data">
                         <input type="hidden" name="type" value="pengeluaran">
                         <input type="file" name="excel_file" class="form-control form-control-sm mb-3" accept=".csv" required>
-                        <button type="submit" class="btn btn-danger w-100 fw-bold shadow-sm">
-                            <i class="fas fa-upload me-1"></i> Impor Pengeluaran
+                        <button type="submit" class="btn btn-danger btn-upload w-100 shadow-sm">
+                            <i class="fas fa-cloud-upload-alt me-2"></i>Impor Pengeluaran
                         </button>
                     </form>
                 </div>
             </div>
         </div>
 
+        <!-- Pemasukan Card -->
         <div class="col-md-4">
-            <div class="card shadow-sm upload-card h-100">
-                <div class="card-body text-center p-4">
-                    <div class="icon-box bg-success bg-opacity-10 text-success">
-                        <i class="fas fa-file-import fa-2xl"></i>
+            <div class="card shadow-sm upload-card h-100 border-top border-success border-4">
+                <div class="card-body p-4 text-center">
+                    <div class="icon-circle bg-success bg-opacity-10 text-success">
+                        <i class="fas fa-file-import"></i>
                     </div>
-                    <h5 class="fw-bold mb-3">Data Pemasukan</h5>
-                    <p class="small text-muted mb-4">Catat barang masuk (droping/pembelian) untuk menambah saldo stok.</p>
+                    <h5 class="fw-bold text-dark mb-2">Data Pemasukan</h5>
+                    <p class="card-title-sub mb-4 px-2">Catat barang masuk untuk menambah saldo stok gudang.</p>
                     <form action="../DB/process_upload.php" method="POST" enctype="multipart/form-data">
                         <input type="hidden" name="type" value="pemasukan">
                         <input type="file" name="excel_file" class="form-control form-control-sm mb-3" accept=".csv" required>
-                        <button type="submit" class="btn btn-success w-100 fw-bold shadow-sm">
-                            <i class="fas fa-upload me-1"></i> Impor Pemasukan
+                        <button type="submit" class="btn btn-success btn-upload w-100 shadow-sm">
+                            <i class="fas fa-cloud-upload-alt me-2"></i>Impor Pemasukan
                         </button>
                     </form>
                 </div>
             </div>
         </div>
 
+        <!-- Master Data Card -->
         <div class="col-md-4">
-            <div class="card shadow-sm upload-card h-100">
-                <div class="card-body text-center p-4">
-                    <div class="icon-box bg-primary bg-opacity-10 text-primary">
-                        <i class="fas fa-database fa-2xl"></i>
+            <div class="card shadow-sm upload-card h-100 border-top border-primary border-4">
+                <div class="card-body p-4 text-center">
+                    <div class="icon-circle bg-primary bg-opacity-10 text-primary">
+                        <i class="fas fa-database"></i>
                     </div>
-                    <h5 class="fw-bold mb-3">Master Barang</h5>
-                    <p class="small text-muted mb-4">Perbarui daftar nama barang, satuan, atau inisialisasi master stok.</p>
+                    <h5 class="fw-bold text-dark mb-2">Master Barang</h5>
+                    <p class="card-title-sub mb-4 px-2">Sinkronkan daftar nama barang dan satuan resmi.</p>
                     <form action="../DB/process_upload.php" method="POST" enctype="multipart/form-data">
                         <input type="hidden" name="type" value="master">
                         <input type="file" name="excel_file" class="form-control form-control-sm mb-3" accept=".csv" required>
-                        <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm">
-                            <i class="fas fa-sync-alt me-1"></i> Sinkron Master
+                        <button type="submit" class="btn btn-primary btn-upload w-100 shadow-sm">
+                            <i class="fas fa-sync-alt me-2"></i>Sinkron Master
                         </button>
                     </form>
                 </div>
@@ -131,39 +151,47 @@ $current_page = basename($_SERVER['PHP_SELF']);
         </div>
     </div>
 
-    <div class="card shadow mt-5">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="card-title text-primary"><i class="fas fa-info-circle me-2"></i>Panduan Format Kolom CSV</h5>
+    <!-- CSV Format Guide -->
+    <div class="card shadow-sm border-0 guide-section">
+        <div class="card-body p-4">
+            <div class="d-flex align-items-center mb-4">
+                <div class="bg-warning bg-opacity-10 p-2 rounded-circle me-3">
+                    <i class="fas fa-lightbulb text-warning"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-0">Panduan Format Kolom CSV</h5>
             </div>
-            <table class="table table-striped table-hover align-middle">
-                <thead class="table-dark">
-                    <tr>
-                        <th class="text-center">Kategori</th>
-                        <th>Struktur Kolom CSV (Urutan Harus Tepat)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="text-center fw-bold">Pengeluaran</td>
-                        <td><code>Timestamp, Tanggal, Pegawai, Nama Barang, Jumlah</code></td>
-                    </tr>
-                    <tr>
-                        <td class="text-center fw-bold text-success">Pemasukan</td>
-                        <td><code>Tanggal, Nama Barang, Jumlah, Keterangan</code></td>
-                    </tr>
-                    <tr>
-                        <td class="text-center fw-bold text-primary">Master Barang</td>
-                        <td><code>Nama Barang, Satuan</code></td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle border">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="ps-4" width="200">Kategori</th>
+                            <th>Struktur Kolom (Urutan Wajib Sama)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="ps-4 fw-bold text-danger">Pengeluaran</td>
+                            <td><code class="bg-light p-1 rounded text-dark">Tanggal, Pegawai, Nama Barang, Jumlah, Satuan, Keterangan, No Bukti</code></td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4 fw-bold text-success">Pemasukan</td>
+                            <td><code class="bg-light p-1 rounded text-dark">Tanggal, Nama Barang, Jumlah, Satuan, Keterangan</code></td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4 fw-bold text-primary">Master Barang</td>
+                            <td><code class="bg-light p-1 rounded text-dark">Nama Barang, Satuan</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="alert alert-secondary mt-3 small mb-0">
+                <i class="fas fa-info-circle me-2"></i> Pastikan file berformat <strong>.csv</strong> dan menggunakan pemisah koma.
+            </div>
         </div>
     </div>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html>
+</html>x
