@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-deep-navy: #002d5a;
+}
+
+body {
+  @apply bg-[#f8fafc] text-deep-navy;
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
