@@ -1,12 +1,32 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 :root {
-  --color-deep-navy: #002d5a;
+  --accent-primary: #3b82f6; /* Modern Blue */
+  --accent-secondary: #8b5cf6; /* Modern Purple */
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.1);
 }
 
 body {
-  @apply bg-[#f8fafc] text-deep-navy;
-  font-family: "Plus Jakarta Sans", sans-serif;
+  margin: 0;
+  /* Dark animated gradient background */
+  background: radial-gradient(circle at top left, #0f172a, #020617);
+  color: #f8fafc;
+  font-family: "Inter", sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom Glass Effect */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.text-gradient {
+  background: linear-gradient(to right, #60a5fa, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }

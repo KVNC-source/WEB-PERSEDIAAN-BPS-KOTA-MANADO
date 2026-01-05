@@ -1,132 +1,189 @@
-import React from "react";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion"; // Install via 'npm install framer-motion'
 import {
-  Package,
-  ArrowUpCircle,
-  ArrowDownCircle,
-  Database,
+  LayoutGrid,
+  ArrowDownRight,
+  ArrowUpRight,
+  Layers,
+  Settings,
+  Search,
   Bell,
+  Menu,
 } from "lucide-react";
 
-const StatCard = ({ title, value, icon: Icon, colorClass }) => (
-  <div className="bg-white p-6 rounded-[28px] shadow-[15px_15px_30px_#e2e8f0,-15px_-15px_30px_#ffffff] border border-white/50 flex items-center space-x-5">
-    <div className={`p-4 rounded-2xl ${colorClass} bg-opacity-10`}>
-      {Icon && (
-        <Icon className={`w-7 h-7 ${colorClass.replace("bg-", "text-")}`} />
-      )}
+// Import your sub-pages
+import InventoryTable from "./components/InventoryTable";
+import RequestForm from "./pages/RequestForm";
+
+const App = () => {
+  const [activeTab, setActiveTab] = useState("dashboard");
+
+  return (
+    <div className="flex min-h-screen">
+      {/* 1. Futuristic Floating Sidebar */}
+      <nav className="w-20 lg:w-64 flex flex-col p-6 gap-8 border-r border-white/5 bg-slate-950/50 backdrop-blur-xl sticky top-0 h-screen">
+        <div className="flex items-center gap-3 px-2">
+          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <Layers className="text-white" size={24} />
+          </div>
+          <span className="font-bold text-xl hidden lg:block tracking-tighter">
+            SIPA <span className="text-blue-500">2.0</span>
+          </span>
+        </div>
+
+        <div className="flex flex-col gap-2 flex-1">
+          <NavLink
+            icon={<LayoutGrid />}
+            label="Dashboard"
+            active={activeTab === "dashboard"}
+            onClick={() => setActiveTab("dashboard")}
+          />
+          <NavLink
+            icon={<ArrowDownRight />}
+            label="Inbound"
+            active={activeTab === "inbound"}
+            onClick={() => setActiveTab("inbound")}
+          />
+          <NavLink
+            icon={<ArrowUpRight />}
+            label="Outbound"
+            active={activeTab === "outbound"}
+            onClick={() => setActiveTab("outbound")}
+          />
+          <NavLink
+            icon={<Layers />}
+            label="Inventory"
+            active={activeTab === "stok"}
+            onClick={() => setActiveTab("stok")}
+          />
+        </div>
+
+        <button className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white transition-all">
+          <Settings size={20} />
+          <span className="text-sm font-medium hidden lg:block">
+            System Config
+          </span>
+        </button>
+      </nav>
+
+      {/* 2. Main Viewport */}
+      <main className="flex-1 p-8 lg:p-12 relative">
+        {/* Animated Background Glows */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] -z-10" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[120px] -z-10" />
+
+        {/* Top Header */}
+        <header className="flex justify-between items-center mb-12">
+          <h2 className="text-4xl font-black tracking-tighter capitalize">
+            {activeTab}
+          </h2>
+          <div className="flex items-center gap-6">
+            <div className="hidden md:flex items-center bg-white/5 border border-white/10 rounded-full px-4 py-2 w-64 focus-within:ring-2 ring-blue-500/50 transition-all">
+              <Search size={18} className="text-slate-500" />
+              <input
+                type="text"
+                placeholder="Global Search..."
+                className="bg-transparent border-none focus:outline-none px-3 text-sm"
+              />
+            </div>
+            <button className="p-3 glass-panel rounded-full text-slate-300 hover:text-white">
+              <Bell size={20} />
+            </button>
+            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 p-[2px]">
+              <div className="w-full h-full rounded-full bg-slate-950 flex items-center justify-center text-xs font-bold">
+                AD
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* 3. Dynamic Page Content with Framer Motion Animation */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            {activeTab === "dashboard" && <BentoDashboard />}
+            {activeTab !== "dashboard" && (
+              <div className="glass-panel rounded-[32px] overflow-hidden p-8">
+                {/* Your existing tables/forms but with updated styles */}
+                {activeTab === "stok" && <InventoryTable type="stok" />}
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </main>
     </div>
-    <div>
-      <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] mb-1">
-        {title}
-      </p>
-      <h3 className="text-2xl font-black text-deep-navy">{value}</h3>
+  );
+};
+
+// --- BENTO GRID COMPONENTS ---
+
+const BentoDashboard = () => (
+  <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 auto-rows-[180px]">
+    {/* Large Growth Chart Item */}
+    <div className="md:col-span-2 lg:col-span-3 row-span-2 glass-panel rounded-[32px] p-8">
+      <h3 className="text-xl font-bold mb-8">Stock Dynamics</h3>
+      <div className="h-[250px] w-full flex items-center justify-center text-slate-600 border-2 border-dashed border-white/5 rounded-2xl">
+        Chart Visualizer Placeholder
+      </div>
     </div>
+
+    {/* Stat Cards as Small Bento Items */}
+    <StatBox
+      label="Total Assets"
+      value="2,408"
+      icon={<Layers className="text-blue-400" />}
+    />
+    <StatBox
+      label="Critical Stock"
+      value="12"
+      sub="Immediate attention"
+      alert
+    />
+    <StatBox label="Inbound Vol" value="+15.2%" sub="Since last month" />
   </div>
 );
 
-function App() {
-  return (
-    <div className="min-h-screen bg-[#f8fafc] p-6 lg:p-12">
-      {/* Header Section */}
-      <header className="flex justify-between items-center mb-12">
-        <div>
-          <h1 className="text-3xl font-black text-deep-navy tracking-tighter">
-            SIPA-BPS <span className="text-blue-600">MANADO</span>
-          </h1>
-          <p className="text-slate-500 font-bold text-sm">
-            Sistem Informasi Persediaan ATK
-          </p>
-        </div>
-        <button className="relative p-3 bg-white rounded-2xl shadow-sm border border-slate-200 text-deep-navy hover:shadow-md transition-all">
-          <Bell size={20} />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-        </button>
-      </header>
-
-      {/* Grid Statistik */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-        <StatCard
-          title="Total Katalog"
-          value="128"
-          icon={Package}
-          colorClass="bg-blue-600"
-        />
-        <StatCard
-          title="Barang Masuk"
-          value="2.450"
-          icon={ArrowUpCircle}
-          colorClass="bg-emerald-600"
-        />
-        <StatCard
-          title="Barang Keluar"
-          value="842"
-          icon={ArrowDownCircle}
-          colorClass="bg-orange-600"
-        />
-        <StatCard
-          title="Posisi Stok"
-          value="1.608"
-          icon={Database}
-          colorClass="bg-indigo-600"
-        />
-      </div>
-
-      {/* Content Area */}
-      <div className="grid grid-cols-1 gap-8">
-        <div className="bg-white rounded-[35px] p-8 shadow-[20px_20px_60px_#bebebe,-20px_-20px_60px_#ffffff] border border-white">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-xl font-black text-deep-navy">
-              Monitoring Stok ATK
-            </h2>
-            <div className="flex space-x-2">
-              <span className="px-4 py-1.5 bg-slate-100 rounded-full text-xs font-bold text-slate-600">
-                Terakhir Update: Hari Ini
-              </span>
-            </div>
-          </div>
-
-          {/* Placeholder Table */}
-          <div className="overflow-hidden rounded-2xl border border-slate-100">
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-slate-50">
-                <tr>
-                  <th className="p-4 text-xs font-black text-slate-400 uppercase tracking-widest">
-                    Nama Barang
-                  </th>
-                  <th className="p-4 text-xs font-black text-slate-400 uppercase tracking-widest">
-                    Satuan
-                  </th>
-                  <th className="p-4 text-xs font-black text-slate-400 uppercase tracking-widest text-center">
-                    Stok
-                  </th>
-                  <th className="p-4 text-xs font-black text-slate-400 uppercase tracking-widest text-right">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-t border-slate-50">
-                  <td className="p-4 font-bold text-deep-navy">
-                    Kertas A4 80gr
-                  </td>
-                  <td className="p-4 text-slate-500 font-medium text-sm">
-                    Rim
-                  </td>
-                  <td className="p-4 font-black text-center text-deep-navy text-lg">
-                    45
-                  </td>
-                  <td className="p-4 text-right">
-                    <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-black uppercase">
-                      Tersedia
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+const StatBox = ({ label, value, sub, alert }) => (
+  <div
+    className={`glass-panel rounded-[32px] p-6 flex flex-col justify-between group cursor-pointer hover:border-blue-500/50 transition-all ${
+      alert ? "bg-red-500/5 border-red-500/20" : ""
+    }`}
+  >
+    <div>
+      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+        {label}
+      </p>
+      <h3 className={`text-3xl font-black mt-2 ${alert ? "text-red-400" : ""}`}>
+        {value}
+      </h3>
     </div>
-  );
-}
+    <p className="text-[10px] font-medium text-slate-500">{sub}</p>
+  </div>
+);
+
+const NavLink = ({ icon, label, active, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`flex items-center gap-4 px-4 py-4 rounded-2xl transition-all relative ${
+      active ? "text-white" : "text-slate-500 hover:text-white hover:bg-white/5"
+    }`}
+  >
+    {active && (
+      <motion.div
+        layoutId="nav-glow"
+        className="absolute inset-0 bg-blue-600/20 rounded-2xl border border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.3)]"
+      />
+    )}
+    <span className="relative z-10">{icon}</span>
+    <span className="text-sm font-bold relative z-10 hidden lg:block tracking-tight">
+      {label}
+    </span>
+  </button>
+);
 
 export default App;
