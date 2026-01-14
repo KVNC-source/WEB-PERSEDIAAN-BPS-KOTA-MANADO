@@ -100,7 +100,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $user_role == 'admin') {
     // Sync IDs for stock calculations
     mysqli_query($conn, "UPDATE pemasukan p JOIN barang_atk b ON p.nama_barang_input = b.nama_barang SET p.id_barang = b.id_barang WHERE p.id_barang IS NULL");
     mysqli_query($conn, "UPDATE pengeluaran pg JOIN barang_atk b ON pg.nama_barang_input = b.nama_barang SET pg.id_barang = b.id_barang WHERE pg.id_barang IS NULL");
-
     header("Location: ../Template/index.php?msg=Berhasil memproses $success data $type");
     exit;
 } else {

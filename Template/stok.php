@@ -1,4 +1,10 @@
 <?php
+session_start();
+if (!isset($_SESSION['user'])) {
+  header("Location: login.php");
+  exit;
+}
+
 include '../DB/config.php';
 
 // Query untuk menghitung stok secara real-time

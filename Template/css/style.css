@@ -34,13 +34,27 @@ body {
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
   border-bottom: 1px solid var(--glass-border);
-  padding: 0.8rem 2rem;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+
+  padding: 1.25rem 2.5rem;
+  min-height: 80px;
+
+  display: flex;
+  align-items: center;
+  overflow: visible;
+
+  box-shadow: 0 6px 35px rgba(0, 0, 0, 0.06);
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
 }
 
 .navbar-brand img {
-  height: 45px;
-  filter: invert(1) brightness(0.2); /* Adjust based on your logo color */
+  height: 46px;
+  max-height: 100%;
+  width: auto;
+  filter: brightness(0) saturate(100%);
 }
 
 .navbar-bps .btn {
@@ -56,6 +70,10 @@ body {
   background: var(--bps-blue) !important;
   color: white !important;
   box-shadow: 0 4px 15px rgba(0, 68, 136, 0.2);
+}
+
+.navbar-bps .container-fluid {
+  align-items: center;
 }
 
 /* --- HERO TITLES --- */
