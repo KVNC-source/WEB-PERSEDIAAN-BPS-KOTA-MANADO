@@ -1,135 +1,265 @@
-/* BPS Kota Manado - Official Web Theme 
-   Colors: Dark Blue (#004488) & Orange (#FFA500)
+/* BPS KOTA MANADO - High-End Modern Theme 
+   Design: Neumorphic Glass / Soft UI
 */
+
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
 
 :root {
   --bps-blue: #004488;
-  --bps-blue-dark: #003366;
+  --bps-blue-light: #007bff;
+  --bps-blue-glass: rgba(0, 68, 136, 0.05);
   --bps-orange: #ffa500;
-  --bps-bg-light: #f4f7f9;
-  --bps-text: #333333;
+  --bps-bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  --bps-text-main: #1e293b;
+  --bps-text-muted: #64748b;
+  --radius-xl: 24px;
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --neo-shadow: 20px 20px 60px #bebebe, -20px -20px 60px #ffffff;
 }
 
 body {
-  background-color: var(--bps-bg-light);
-  color: var(--bps-text);
-  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bps-bg-gradient);
+  color: var(--bps-text-main);
+  font-family: "Plus Jakarta Sans", sans-serif;
+  min-height: 100vh;
+  letter-spacing: -0.01em;
 }
 
-/* Navbar Implementation */
+/* --- NAVIGATION --- */
 .navbar-bps {
-  background-color: var(--bps-blue) !important;
-  border-bottom: 4px solid var(--bps-orange);
-  padding: 10px 20px;
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-bottom: 1px solid var(--glass-border);
+
+  padding: 1.25rem 2.5rem;
+  min-height: 80px;
+
+  display: flex;
+  align-items: center;
+  overflow: visible;
+
+  box-shadow: 0 6px 35px rgba(0, 0, 0, 0.06);
 }
 
 .navbar-brand {
-  color: #ffffff !important;
   display: flex;
   align-items: center;
-  font-weight: bold;
 }
 
-.navbar-logo-white {
-  height: 50px;
+.navbar-brand img {
+  height: 46px;
+  max-height: 100%;
   width: auto;
-  filter: none !important; /* Glow effect removed as requested */
+  filter: brightness(0) saturate(100%);
 }
 
-/* Card & UI Elements */
-/* Card & UI Elements */
-.card {
+.navbar-bps .btn {
+  font-weight: 700;
+  color: var(--bps-text-main) !important;
+  border-radius: 12px;
+  transition: all 0.3s ease;
   border: none;
-  /* Keep the top accent line if you like it, otherwise remove this: */
-  border-top: 4px solid var(--bps-blue);
-
-  /* REMOVE THE BUBBLE WRAP: */
-  border-radius: 0; /* Set to 0 to remove rounded corners */
-  box-shadow: none; /* Removes the floating/depth effect */
-  background-color: transparent; /* Makes the title blend with the page background */
+  padding: 0.5rem 1rem;
 }
 
-.card-title {
-  background: none !important;
-  border-bottom: none !important;
-  padding-left: 0; /* Aligns text to the far left of the container */
-}
-
-/* Badges & Status */
-.no-bukti-badge {
-  background-color: var(--bps-orange);
-  color: #fff;
-  font-weight: bold;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-}
-
-/* Buttons */
-.btn-warning {
-  background-color: var(--bps-orange) !important;
-  border-color: var(--bps-orange) !important;
-  color: #fff !important;
-}
-
-.btn-warning:hover {
-  background-color: #e69500 !important;
-}
-
-.btn-light.text-primary {
-  color: var(--bps-blue) !important;
-  font-weight: bold;
-}
-
-/* Table Styling */
-.table thead th {
-  background-color: var(--bps-blue) !important;
-  color: white !important;
-  text-align: center;
-  vertical-align: middle;
-  border: none;
-}
-
-.table-striped tbody tr:nth-of-type(odd) {
-  background-color: rgba(0, 68, 136, 0.02);
-}
-
-/* Custom alignment for DataTables */
-.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+.navbar-bps .btn.btn-light {
   background: var(--bps-blue) !important;
   color: white !important;
-  border: 1px solid var(--bps-blue) !important;
+  box-shadow: 0 4px 15px rgba(0, 68, 136, 0.2);
 }
 
-/* --- Letter/Long-form Text Styles --- */
-.letter-content {
-  max-width: 600px; /* Limits width for better readability */
-  background: #fff;
-  padding: 40px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-  border-radius: 2px;
+.navbar-bps .container-fluid {
+  align-items: center;
+}
+
+/* --- HERO TITLES --- */
+.hero-title {
+  font-weight: 800;
+  background: linear-gradient(to right, var(--bps-blue), var(--bps-blue-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+/* --- CARDS & CONTAINERS --- */
+.neumorphic-card,
+.card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+  box-shadow: var(--neo-shadow);
+  margin-bottom: 2rem;
+}
+
+/* --- MODERN TABLE (FLOATING ROWS) --- */
+.table-pronounced {
+  border-collapse: separate !important;
+  border-spacing: 0 12px !important;
+  background: transparent !important;
+}
+
+.table-pronounced thead th {
+  background: transparent !important;
+  color: var(--bps-text-muted) !important;
+  border: none !important;
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 1.5px;
+  padding: 10px 20px !important;
+  text-transform: uppercase;
+}
+
+.table-pronounced tbody tr {
+  background: white !important;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05) !important;
+  border-radius: 20px !important;
+  transition: all 0.3s ease;
+}
+
+.table-pronounced tbody tr:hover {
+  transform: translateX(10px);
+  box-shadow: 0 12px 25px rgba(0, 68, 136, 0.1) !important;
+}
+
+.table-pronounced tbody td {
+  padding: 1.25rem !important;
+  border: none !important;
+  vertical-align: middle;
+}
+
+.table-pronounced tbody td:first-child {
+  border-radius: 20px 0 0 20px !important;
+}
+.table-pronounced tbody td:last-child {
+  border-radius: 0 20px 20px 0 !important;
+}
+
+/* --- UPLOAD ROWS (INPUT DATA PAGE) --- */
+.upload-row {
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 20px;
+  margin-bottom: 1.25rem;
+  border: 1px solid #edf2f7;
+  transition: all 0.3s ease;
+}
+
+.upload-row:hover {
+  transform: translateX(10px);
+  border-color: var(--bps-blue);
+}
+
+/* --- VISUAL ELEMENTS --- */
+.icon-circle {
+  width: 55px;
+  height: 55px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  margin-right: 20px;
+  box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.qty-pronounced {
+  background: #fff5f5;
+  color: #dc3545;
+  font-weight: 800;
+  font-size: 1.1rem;
+  padding: 5px 15px;
+  border-radius: 10px;
+  display: inline-block;
+  border: 1px solid #fee2e2;
+}
+
+.status-pill {
+  padding: 0.5rem 1.25rem;
+  border-radius: 14px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.status-approved {
+  background: #dcfce7;
+  color: #166534;
+}
+.status-draft {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+/* --- BUTTONS --- */
+.btn-modern {
+  border-radius: 14px;
+  padding: 12px 25px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.75rem;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.btn-modern:hover {
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+/* --- SIDEBAR GUIDE (UPLOAD PAGE) --- */
+.instruction-panel {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+  position: sticky;
+  top: 2rem;
+  border: 1px solid white;
+  box-shadow: var(--neo-shadow);
+}
+
+.guide-step {
   position: relative;
-  line-height: 1.8; /* Increases spacing between lines */
+  padding-left: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
-.letter-content p {
-  margin-bottom: 25px; /* Adds space between your paragraphs */
-  font-size: 1.15em;
-  color: var(--text-dark);
-  text-align: justify; /* Optional: gives a clean, formal look */
-}
-
-.letter-content p:last-child {
-  margin-bottom: 0;
-}
-
-/* Subtle decorative element for a "letter" feel */
-.letter-content::after {
-  content: "♥";
+.guide-step::before {
+  content: "";
   position: absolute;
-  bottom: 20px;
-  right: 30px;
-  font-size: 1.5em;
-  color: var(--christmas-red);
-  opacity: 0.5;
+  left: 0;
+  top: 4px;
+  width: 4px;
+  height: 20px;
+  border-radius: 10px;
+  background: var(--bps-blue);
+}
+
+/* --- DATA TABLES --- */
+.dataTables_wrapper .dataTables_filter input {
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  padding: 8px 15px;
+  background: white;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+  background: var(--bps-blue) !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-weight: 700;
 }

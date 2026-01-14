@@ -1,4 +1,12 @@
 <?php
+ob_start();
+
+session_start();
+if (!isset($_SESSION['user'])) {
+  header("Location: login.php");
+  exit;
+}
+
 include '../DB/config.php';
 
 $no_bukti = isset($_GET['no_bukti']) ? (int)$_GET['no_bukti'] : 0;
@@ -12,6 +20,9 @@ if (empty($items)) {
 
 // Variabel tahun tetap diambil otomatis untuk identitas dokumen
 $tahun = date('Y', strtotime($items[0]['tanggal']));
+
+// 🔹 NAMA PENGAMBIL (AUTO DARI DB)
+$nama_pengambil = $items[0]['nama_pegawai'];
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -19,7 +30,6 @@ $tahun = date('Y', strtotime($items[0]['tanggal']));
     <meta charset="UTF-8">
     <title>Form BPS Manado - Official Print</title>
     <style>
-        /* Pengaturan Font Global: Times New Roman */
         body { 
             font-family: "Times New Roman", Times, serif; 
             font-size: 11pt; 
@@ -30,7 +40,6 @@ $tahun = date('Y', strtotime($items[0]['tanggal']));
             print-color-adjust: exact !important;
         }
 
-        /* Container Header */
         .imprint-container { 
             width: 100%; 
             margin-bottom: 5px; 
@@ -39,7 +48,6 @@ $tahun = date('Y', strtotime($items[0]['tanggal']));
             align-items: flex-start; 
         }
 
-        /* Branding BPS: Arial Italic */
         .logo-section { display: flex; align-items: center; }
         .logo-img { 
             width: 65px; 
@@ -58,7 +66,6 @@ $tahun = date('Y', strtotime($items[0]['tanggal']));
             letter-spacing: 0.5px;
         }
 
-        /* Info No/Tahun di Kanan Atas */
         .header-info { 
             width: auto; 
             min-width: 140px; 
@@ -68,7 +75,6 @@ $tahun = date('Y', strtotime($items[0]['tanggal']));
         .header-info td { border: none; padding: 1px 0; font-size: 11pt; text-align: left; }
         .header-info td:first-child { width: 50px; } 
 
-        /* Judul Dokumen */
         .title-block { 
             text-align: center; 
             font-weight: bold; 
@@ -77,12 +83,10 @@ $tahun = date('Y', strtotime($items[0]['tanggal']));
             font-size: 12pt; 
         }
         
-        /* Tabel Utama */
         .main-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; background: transparent; }
         .main-table th, .main-table td { border: 1px solid black; padding: 6px; text-align: center; }
         .main-table th { font-weight: bold; }
 
-        /* Bagian Tanda Tangan & Tanggal */
         .footer-section { 
             width: 100%; 
             margin-top: 15px; 
@@ -118,90 +122,106 @@ $tahun = date('Y', strtotime($items[0]['tanggal']));
 </head>
 <body>
 
-    <div class="imprint-container">
-        <div class="logo-section">
-            <img src="../asset/LOGO.png" class="logo-img" alt="BPS Logo">
-            <div class="bps-text-container">
-                <div class="bps-text-line">BADAN PUSAT STATISTIK</div>
-                <div class="bps-text-line">KOTA MANADO</div>
-            </div>
-        </div>
-
-        <div class="header-info">
-            <table>
-                <tr>
-                    <td>No</td>
-                    <td>: <?php echo str_pad($no_bukti, 3, '0', STR_PAD_LEFT); ?></td>
-                </tr>
-                <tr>
-                    <td>Tahun</td>
-                    <td>: <?php echo $tahun; ?></td>
-                </tr>
-            </table>
+<div class="imprint-container">
+    <div class="logo-section">
+        <img src="../asset/LOGO.png" class="logo-img" alt="BPS Logo">
+        <div class="bps-text-container">
+            <div class="bps-text-line">BADAN PUSAT STATISTIK</div>
+            <div class="bps-text-line">KOTA MANADO</div>
         </div>
     </div>
 
-    <div class="title-block">
-        FORM PENGAMBILAN BARANG<br>
-        ATK/ARK PERSEDIAAN
-    </div>  
-
-    <table class="main-table">
-        <thead>
+    <div class="header-info">
+        <table>
             <tr>
-                <th rowspan="2" style="width: 40px;">No.</th>
-                <th rowspan="2">Nama Barang</th>
-                <th rowspan="2" style="width: 120px;">Satuan barang</th>
-                <th colspan="2" style="width: 160px;">Jumlah</th>
-                <th rowspan="2" style="width: 120px;">Keterangan</th>
+                <td>No</td>
+                <td>: <?= str_pad($no_bukti, 3, '0', STR_PAD_LEFT); ?></td>
             </tr>
             <tr>
-                <th>Dimintai</th>
-                <th>Disetujui</th>
+                <td>Tahun</td>
+                <td>: <?= $tahun; ?></td>
             </tr>
-        </thead>
-        <tbody>
-            <?php 
-            for ($i = 0; $i < 15; $i++) { 
-                $item = isset($items[$i]) ? $items[$i] : null;
-                echo '<tr>';
-                echo '<td>' . ($i + 1) . '</td>';
-                echo '<td style="text-align: left;">' . ($item ? htmlspecialchars($item['nama_barang_input']) : '') . '</td>';
-                echo '<td>' . ($item ? htmlspecialchars($item['satuan']) : '') . '</td>';
-                echo '<td>' . ($item ? htmlspecialchars($item['jumlah']) : '') . '</td>';
-                echo '<td>' . ($item ? htmlspecialchars($item['jumlah']) : '') . '</td>';
-                echo '<td>' . ($item ? htmlspecialchars($item['keterangan']) : '') . '</td>';
-                echo '</tr>';
-            } 
-            ?>
-        </tbody>
-    </table>
+        </table>
+    </div>
+</div>
 
-    <div class="footer-section">
-        <div class="manado-line">
-            Manado, ............................................
+<div class="title-block">
+    FORM PENGAMBILAN BARANG<br>
+    ATK/ARK PERSEDIAAN
+</div>  
+
+<table class="main-table">
+    <thead>
+        <tr>
+            <th rowspan="2" style="width: 40px;">No.</th>
+            <th rowspan="2">Nama Barang</th>
+            <th rowspan="2" style="width: 120px;">Satuan barang</th>
+            <th colspan="2" style="width: 160px;">Jumlah</th>
+            <th rowspan="2" style="width: 120px;">Keterangan</th>
+        </tr>
+        <tr>
+            <th>Dimintai</th>
+            <th>Disetujui</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php 
+        for ($i = 0; $i < 15; $i++) { 
+            $item = $items[$i] ?? null;
+            echo '<tr>';
+            echo '<td>' . ($i + 1) . '</td>';
+            echo '<td style="text-align: left;">' . ($item ? htmlspecialchars($item['nama_barang_input']) : '') . '</td>';
+            echo '<td>' . ($item ? htmlspecialchars($item['satuan']) : '') . '</td>';
+            echo '<td>' . ($item ? htmlspecialchars($item['jumlah']) : '') . '</td>';
+            echo '<td>' . ($item ? htmlspecialchars($item['jumlah']) : '') . '</td>';
+            echo '<td>' . ($item ? htmlspecialchars($item['keterangan']) : '') . '</td>';
+            echo '</tr>';
+        } 
+        ?>
+    </tbody>
+</table>
+
+<div class="footer-section">
+    <div class="manado-line">
+        Manado, ............................................
+    </div>
+    
+    <div class="sig-container">
+        <div class="sig-box-left">
+            <div>Diambil oleh,</div>
+            <div class="sig-space"></div>
+            <div>( <?= htmlspecialchars($nama_pengambil); ?> )</div>
         </div>
         
-        <div class="sig-container">
-            <div class="sig-box-left">
-                <div>Diambil oleh,</div>
-                <div class="sig-space"></div>
-                <div>( ............................ )</div>
-            </div>
-            
-            <div class="sig-box-right">
-                <div>Disetujui oleh</div>
-                <div class="sig-space"></div>
-                <div class="sig-approver-grid">
-                    <span>Kasubbag Umum</span>
-                    <span>Operator Persediaan</span>
-                </div>
+        <div class="sig-box-right">
+            <div>Disetujui oleh</div>
+            <div class="sig-space"></div>
+            <div class="sig-approver-grid">
+                <span>Kasubbag Umum</span>
+                <span>Operator Persediaan</span>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="no-print" style="text-align: center; margin-top: 30px;">
-        <button onclick="window.print()" style="padding: 10px 20px; cursor: pointer; font-family: Arial;">PRINT FORM</button>
-    </div>
+<div class="no-print" style="text-align: center; margin-top: 30px;">
+    <button onclick="window.print()" style="padding: 10px 20px; cursor: pointer; font-family: Arial;">
+        PRINT FORM
+    </button>
+</div>
+
 </body>
 </html>
+
+<?php
+$html = ob_get_clean();
+
+$dir = __DIR__ . '/laporan';
+if (!is_dir($dir)) {
+    mkdir($dir, 0777, true);
+}
+
+$filename = 'pengeluaran_' . $no_bukti . '_' . date('Y-m-d_H-i-s') . '.html';
+file_put_contents($dir . '/' . $filename, $html);
+
+echo $html;

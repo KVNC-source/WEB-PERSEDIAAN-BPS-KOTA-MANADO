@@ -12,42 +12,54 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $user_role == 'admin') {
     $rowCount = 0;
     $success = 0;
 
+    // Tracker for carry-forward logic (defaults to today if the first row is empty)
+    $last_valid_date = date('Y-m-d'); 
+
     /**
      * Helper function for Date conversion
-     * Handles Indonesian month names and converts to MySQL format (YYYY-MM-DD)
+     * Returns NULL if the date string is truly empty to allow for carry-forward logic
      */
     function convertCsvDate($dateString) {
-        if (empty(trim($dateString))) return date('Y-m-d');
+        $cleaned = trim($dateString);
+        if (empty($cleaned)) return null; 
         
-        // Define Indonesian month names and their English counterparts
         $indonesianMonths = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
         $englishMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
         
-        // Replace Indonesian months with English months so PHP can parse it correctly
-        $translatedDate = str_ireplace($indonesianMonths, $englishMonths, trim($dateString));
-        
+        $translatedDate = str_ireplace($indonesianMonths, $englishMonths, $cleaned);
         $date = date_create($translatedDate);
-        return $date ? date_format($date, 'Y-m-d') : date('Y-m-d');
+        
+        return $date ? date_format($date, 'Y-m-d') : null;
     }
 
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
         $rowCount++;
         
-        // Skip headers based on your specific CSV structures
+        // Skip headers based on specific CSV structures
         if ($type == 'pemasukan' && $rowCount <= 3) continue; 
         if ($type == 'pengeluaran' && $rowCount <= 1) continue; 
         if ($type == 'master' && $rowCount <= 4) continue; 
 
-        if (empty(array_filter($data))) continue;
+        // IGNORE EMPTY ROWS OR ROWS WITH ONLY COMMAS (e.g., ,,,,)
+        // array_filter removes empty elements; array_map('trim') ensures spaces aren't counted as data
+        $cleanData = array_filter(array_map('trim', $data));
+        if (empty($cleanData)) {
+            continue; 
+        }
 
         $query = "";
 
         if ($type == 'pengeluaran') {
-            // Respect the spreadsheet date ($data[0]) instead of using today's date
-            $tanggal   = convertCsvDate($data[0]); 
+            // Carry-forward date logic: update tracker if a date exists, otherwise use last known date
+            $csvDate = convertCsvDate($data[0]);
+            if ($csvDate !== null) {
+                $last_valid_date = $csvDate;
+            }
+            
+            $tanggal   = $last_valid_date;
             $pegawai   = mysqli_real_escape_string($conn, $data[1]);
             $barang    = mysqli_real_escape_string($conn, $data[2]);
-            $jumlah    = (int)$data[3];
+            $jumlah    = (float)$data[3];
             $satuan    = isset($data[4]) ? mysqli_real_escape_string($conn, $data[4]) : '';
             $ket       = isset($data[5]) ? mysqli_real_escape_string($conn, $data[5]) : 'Imported';
             $no_bukti  = isset($data[6]) ? mysqli_real_escape_string($conn, $data[6]) : rand(1000, 9999);
@@ -56,8 +68,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $user_role == 'admin') {
                       VALUES ('$tanggal', '$pegawai', '$barang', '$jumlah', '$satuan', '$ket', '$no_bukti')";
         } 
         else if ($type == 'pemasukan') {
-            // Use spreadsheet date for Pemasukan
-            $tanggal = convertCsvDate($data[0]);
+            // Carry-forward date logic for Pemasukan
+            $csvDate = convertCsvDate($data[0]);
+            if ($csvDate !== null) {
+                $last_valid_date = $csvDate;
+            }
+
+            $tanggal = $last_valid_date;
             $barang  = mysqli_real_escape_string($conn, $data[1]);
             $jumlah  = (float)$data[2];
             $satuan  = isset($data[3]) ? mysqli_real_escape_string($conn, $data[3]) : '';
@@ -83,7 +100,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $user_role == 'admin') {
     // Sync IDs for stock calculations
     mysqli_query($conn, "UPDATE pemasukan p JOIN barang_atk b ON p.nama_barang_input = b.nama_barang SET p.id_barang = b.id_barang WHERE p.id_barang IS NULL");
     mysqli_query($conn, "UPDATE pengeluaran pg JOIN barang_atk b ON pg.nama_barang_input = b.nama_barang SET pg.id_barang = b.id_barang WHERE pg.id_barang IS NULL");
-
     header("Location: ../Template/index.php?msg=Berhasil memproses $success data $type");
     exit;
 } else {

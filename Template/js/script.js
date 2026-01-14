@@ -1,46 +1,74 @@
 $(document).ready(function () {
-  // 1. Initialize the Inventory Table (only if the table exists on the page)
-  if ($("#atkTable").length) {
-    const table = $("#atkTable").DataTable({
-      order: [[0, "desc"]],
-      pageLength: 25,
-      dom: "Bfrtip",
-      buttons: ["copy", "excel", "print"],
-      language: {
-        search: "Cari Data (Pegawai/Barang):",
-        lengthMenu: "Tampilkan _MENU_ entri",
-        paginate: {
-          first: "Awal",
-          last: "Akhir",
-          next: "Lanjut",
-          previous: "Balik",
-        },
-      },
-      createdRow: function (row, data, dataIndex) {
-        if (data[5] && data[5].includes("Tidak Disetujui")) {
-          $(row).addClass("table-danger");
-        }
-      },
-    });
-
-    // Filter by Date Range
-    $("#minDate, #maxDate").on("change", function () {
-      table.draw();
-    });
-  }
-
-  // 2. Form Validation for Uploads - FIXED TO CSV
-  $("#uploadForm").on("submit", function (e) {
-    let file = $("#fileInput").val();
-    if (!file.toLowerCase().endsWith(".csv")) {
-      alert("Harap unggah file format .csv sesuai standar sistem pemrosesan.");
+  const handleUpload = (formId, type) => {
+    $(`#${formId}`).on("submit", function (e) {
       e.preventDefault();
-    }
-  });
-});
+      const fileInput = $(this).find('input[type="file"]')[0];
+      const file = fileInput.files[0];
+      const reader = new FileReader();
 
-// Logic for Automatic Print Trigger
-function printForm(no_bukti) {
-  // Corrected to PHP path based on your file structure
-  window.location.href = `generate_pdf.php?no_bukti=${no_bukti}`;
-}
+      reader.onload = function (e) {
+        const data = new Uint8Array(e.target.result);
+        // cellDates: true ensures SheetJS converts Excel date serials to JS Date objects
+        const workbook = XLSX.read(data, { type: "array", cellDates: true });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+
+        // Convert to Array of Arrays
+        let rows = XLSX.utils.sheet_to_json(firstSheet, {
+          header: 1,
+          blankrows: false,
+        });
+
+        // Define skip lines (Pemasukan: 3, Master: 4, Pengeluaran: 1)
+        let skip = type === "pemasukan" ? 3 : type === "master" ? 4 : 1;
+        let lastValidDate = "";
+        let processedData = [];
+
+        rows.forEach((row, index) => {
+          if (index < skip) return;
+
+          // Skip truly empty rows (ignore multiple commas/blank cells)
+          if (
+            row.filter((cell) => cell !== null && String(cell).trim() !== "")
+              .length === 0
+          )
+            return;
+
+          // Carry-forward Logic for Date (Index 0)
+          if (row[0]) {
+            if (row[0] instanceof Date) {
+              // Convert JS Date to MySQL YYYY-MM-DD
+              lastValidDate = row[0].toISOString().split("T")[0];
+            } else {
+              lastValidDate = row[0];
+            }
+          }
+          row[0] = lastValidDate;
+
+          processedData.push(row);
+        });
+
+        // Post processed JSON to PHP
+        $.ajax({
+          url: "../DB/process_upload_json.php",
+          method: "POST",
+          data: { type: type, payload: JSON.stringify(processedData) },
+          success: function (response) {
+            const res = JSON.parse(response);
+            alert(`Sukses! ${res.success} data telah diproses.`);
+            window.location.href = "index.php";
+          },
+          error: function () {
+            alert("Gagal menghubungi server.");
+          },
+        });
+      };
+      reader.readAsArrayBuffer(file);
+    });
+  };
+
+  if ($("#form-pengeluaran").length) {
+    handleUpload("form-pengeluaran", "pengeluaran");
+    handleUpload("form-pemasukan", "pemasukan");
+    handleUpload("form-master", "master");
+  }
+});
